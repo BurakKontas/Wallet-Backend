@@ -1,0 +1,4 @@
+CREATE TABLE wallets (
+    id SERIAL PRIMARY KEY,
+    balance NUMERIC(10, 2) DEFAULT 0.0
+);
