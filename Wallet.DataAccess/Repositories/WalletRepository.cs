@@ -3,6 +3,8 @@ using Wallet.DataAccess.Contracts;
 using Wallet.Domain.Entities;
 using Wallet.Infrastructure;
 
+namespace Wallet.DataAccess.Repositories;
+
 public class WalletRepository(WalletContext context) : IWalletRepository
 {
     private readonly WalletContext _context = context;
@@ -13,7 +15,15 @@ public class WalletRepository(WalletContext context) : IWalletRepository
         return wallet!;
     }
 
-    public async Task<decimal?> GetBalanceAsync(int id)
+    public async Task<Wallets> CreateAsync()
+    {
+        var wallet = new Wallets();
+        _context.Wallets.Add(wallet);
+        await _context.SaveChangesAsync();
+        return wallet;
+    }
+
+    public async Task<decimal> GetBalanceAsync(int id)
     {
         var wallet = await GetAsync(id);
         var balance = wallet.Balance;

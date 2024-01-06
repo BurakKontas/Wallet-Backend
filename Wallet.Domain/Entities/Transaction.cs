@@ -13,6 +13,8 @@ public partial class Transaction
 
     public decimal Amount { get; set; }
 
+    public DateTime? Date { get; set; }
+
     public virtual User? Receiver { get; set; }
 
     public virtual User? Sender { get; set; }

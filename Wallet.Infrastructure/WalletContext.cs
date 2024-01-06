@@ -34,6 +34,9 @@ public partial class WalletContext : DbContext
             entity.Property(e => e.Amount)
                 .HasPrecision(10, 2)
                 .HasColumnName("amount");
+            entity.Property(e => e.Date)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone");
             entity.Property(e => e.Receiverid).HasColumnName("receiverid");
             entity.Property(e => e.Senderid).HasColumnName("senderid");
 

@@ -10,7 +10,7 @@ namespace Wallet.DataAccess.Contracts
     public interface IWalletRepository
     {
         public Task<Wallets> GetAsync(int id);
-        public Task<decimal?> GetBalanceAsync(int id);
+        public Task<decimal> GetBalanceAsync(int id);
         public Task<Wallets> UpdateBalance(int id, decimal amount);
     }
 }

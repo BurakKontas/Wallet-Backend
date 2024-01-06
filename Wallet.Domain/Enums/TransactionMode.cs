@@ -8,8 +8,10 @@ namespace Wallet.Domain.Enums
 {
     public enum TransactionMode
     {
-        Deposit = 1,
-        Withdraw = 2,
-        All = 3
+        Send = 1,
+        Receive = 2,
+        Withdraw = 3,
+        Deposit = 4,
+        All = 5
     }
 }
