@@ -13,7 +13,7 @@ public partial class User
 
     public string Hashpassword { get; set; } = null!;
 
-    public int? Walletid { get; set; }
+    public int Walletid { get; set; }
 
     public virtual ICollection<Transaction> TransactionReceivers { get; set; } = new List<Transaction>();
 

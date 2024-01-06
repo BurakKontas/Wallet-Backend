@@ -8,7 +8,7 @@ using Wallet.Domain.Entities;
 
 namespace Wallet.Service.Services
 {
-    internal class AuthService(TokenService JWTService, PasswordHashService passwordHashService, UserRepository userRepository, WalletRepository walletRepository)
+    public class AuthService(TokenService JWTService, PasswordHashService passwordHashService, UserRepository userRepository, WalletRepository walletRepository)
     {
         private readonly TokenService _JWTService = JWTService;
         private readonly PasswordHashService _passwordHashService = passwordHashService;
@@ -29,7 +29,7 @@ namespace Wallet.Service.Services
             return this._JWTService.GenerateToken(user.Id.ToString(), user.Phone);
         }
 
-        public async Task<string> Register(string phone, string password)
+        public async Task<string> Register(string phone,string username, string password)
         {
             var user = await this._usersService.GetAsync(phone);
             if (user != null)
@@ -40,6 +40,7 @@ namespace Wallet.Service.Services
             var newUser = new User
             {
                 Phone = phone,
+                Username = username,
                 Hashpassword = this._passwordHashService.HashPassword(password),
                 Walletid = wallet.Id
             };
