@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Wallet.DataAccess.Repositories;
+using Wallet.Domain.Entities.Response;
 using Wallet.Infrastructure;
 using Wallet.Service.Services;
 
@@ -24,9 +25,9 @@ namespace Wallet.Controllers
         }
 
         [HttpGet("balance")]
-        public async Task<decimal> GetBalance()
+        public async Task<BalanceResponse> GetBalance()
         {
-            var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var token = Request.Headers.Authorization.ToString().Split(" ")[1];
             var userId = _tokenService.GetUserId(token);
 
             var wallet = await _walletRepository.GetAsync(userId);

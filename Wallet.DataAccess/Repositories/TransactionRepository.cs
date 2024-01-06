@@ -40,27 +40,38 @@ public class TransactionRepository(WalletContext context): ITransactionRepositor
         {
             case TransactionMode.Receive:
                 transactions = await _context.Transactions
-                    .Where(x => x.Receiverid == user.Id)
+                    .Where(x => x.Receiverid == user.Id && x.Senderid != user.Id)
+                    .Include(x => x.Sender)
+                    .Include(x => x.Receiver)
                     .ToListAsync();
+
                 break;
             case TransactionMode.Send:
                 transactions = await _context.Transactions
-                    .Where(x => x.Senderid == user.Id)
+                    .Where(x => x.Senderid == user.Id && x.Receiverid != user.Id)
+                    .Include(x => x.Sender)
+                    .Include(x => x.Receiver)
                     .ToListAsync();
                 break;
             case TransactionMode.Deposit:
                 transactions = await _context.Transactions
                     .Where(x => (x.Senderid == user.Id) && (x.Receiverid == user.Id) && (x.Amount > 0))
+                    .Include(x => x.Sender)
+                    .Include(x => x.Receiver)
                     .ToListAsync();
                 break;
             case TransactionMode.Withdraw:
                 transactions = await _context.Transactions
                     .Where(x => (x.Senderid == user.Id) && (x.Receiverid == user.Id) && (x.Amount < 0))
+                    .Include(x => x.Sender)
+                    .Include(x => x.Receiver)
                     .ToListAsync();
                 break;
             case TransactionMode.All:
                 transactions = await _context.Transactions
                     .Where(x => (x.Senderid == user.Id) || (x.Receiverid == user.Id))
+                    .Include(x => x.Sender)
+                    .Include(x => x.Receiver)
                     .ToListAsync();
                 break;
             default:

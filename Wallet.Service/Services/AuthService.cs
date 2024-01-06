@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Wallet.DataAccess.Contracts;
 using Wallet.DataAccess.Repositories;
 using Wallet.Domain.Entities;
+using Wallet.Domain.Entities.DTOs;
+using Wallet.Domain.Entities.Response;
+using Wallet.Domain.Enums;
 
 namespace Wallet.Service.Services
 {
@@ -12,12 +16,12 @@ namespace Wallet.Service.Services
     {
         private readonly TokenService _JWTService = JWTService;
         private readonly PasswordHashService _passwordHashService = passwordHashService;
-        private readonly UserRepository _usersService = userRepository;
-        private readonly WalletRepository _walletService = walletRepository;
+        private readonly UserRepository _usersRepository = userRepository;
+        private readonly WalletRepository _walletRepository = walletRepository;
 
-        public async Task<string> Login(string phone, string password)
+        public async Task<LoginResponse> Login(string phone, string password)
         {
-            var user = await this._usersService.GetAsync(phone);
+            var user = await this._usersRepository.GetAsync(phone);
             if (user == null)
             {
                 throw new Exception("User not found");
@@ -26,17 +30,26 @@ namespace Wallet.Service.Services
             {
                 throw new Exception("Invalid password");
             }
-            return this._JWTService.GenerateToken(user.Id.ToString(), user.Phone);
+            var token = this._JWTService.GenerateToken(user.Id.ToString(), user.Phone);
+            var refreshToken = this._JWTService.GenerateRefreshToken(user.Id.ToString(), user.Phone);
+
+            return new LoginResponse
+            {
+                Token = token,
+                RefreshToken = refreshToken,
+                Phone = phone,
+                Username = user.Username!
+            };
         }
 
-        public async Task<string> Register(string phone,string username, string password)
+        public async Task<RegisterResponse> Register(string phone,string username, string password)
         {
-            var user = await this._usersService.GetAsync(phone);
+            var user = await this._usersRepository.GetAsync(phone);
             if (user != null)
             {
                 throw new Exception("User already exists");
             }
-            var wallet = await this._walletService.CreateAsync();
+            var wallet = await this._walletRepository.CreateAsync();
             var newUser = new User
             {
                 Phone = phone,
@@ -44,15 +57,41 @@ namespace Wallet.Service.Services
                 Hashpassword = this._passwordHashService.HashPassword(password),
                 Walletid = wallet.Id
             };
-            await this._usersService.AddAsync(newUser);
-            return this._JWTService.GenerateToken(newUser.Id.ToString(), newUser.Phone);
+            await this._usersRepository.AddAsync(newUser);
+            var token = this._JWTService.GenerateToken(newUser.Id.ToString(), newUser.Phone);
+            var refreshToken = this._JWTService.GenerateRefreshToken(newUser.Id.ToString(), newUser.Phone);
+            return new RegisterResponse
+            {
+                Token = token,
+                RefreshToken = refreshToken,
+                Phone = phone
+            };
         }
 
         public async void ResetPassword(string phone, string password)
         {
-            var user = await this._usersService.GetAsync(phone) ?? throw new Exception("User not found");
+            var user = await this._usersRepository.GetAsync(phone) ?? throw new Exception("User not found");
             user.Hashpassword = this._passwordHashService.HashPassword(password);
-            await this._usersService.UpdateAsync(user);
+            await this._usersRepository.UpdateAsync(user);
+        }
+
+        public async Task<RefreshTokenResponse> RefreshToken(string refreshToken)
+        {
+            var type = _JWTService.GetTokenType(refreshToken);
+            if (type != TokenType.RefreshToken)
+            {
+                throw new Exception("Invalid token");
+            }
+            var phone = _JWTService.GetPhone(refreshToken);
+            var user = await _usersRepository.GetAsync(phone);
+            var newToken = _JWTService.GenerateToken(user.Id.ToString(), user.Phone);
+            return new RefreshTokenResponse
+            {
+                Token = newToken,
+                Phone = phone,
+                RefreshToken = refreshToken,
+                Username = user.Username!
+            };
         }
 
     }

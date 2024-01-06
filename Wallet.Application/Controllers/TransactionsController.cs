@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Wallet.DataAccess.Repositories;
+using Wallet.Domain.Entities;
 using Wallet.Domain.Entities.DTOs;
+using Wallet.Domain.Entities.Response;
 using Wallet.Domain.Enums;
 using Wallet.Infrastructure;
 using Wallet.Service.Services;
@@ -32,19 +34,19 @@ namespace Wallet.Controllers
         [HttpPost("sendmoney")]
         public async Task<object> SendMoney([FromBody] SendMoneyDTO sendMoneyDTO)
         {
-            var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var token = Request.Headers.Authorization.ToString().Split(" ")[1];
 
             var senderId = _tokenService.GetUserId(token);
             var recipient = await _userRepository.GetAsync(sendMoneyDTO.RecipientPhone);
 
-            _transactionService.SendMoney(senderId, recipient.Id, sendMoneyDTO.Amount);
+            await _transactionService.SendMoney(senderId, recipient.Id, sendMoneyDTO.Amount);
             return Task.CompletedTask;
         }
 
         [HttpPost("withdraw")]
         public async Task<object> Withdraw([FromBody] WithdrawDTO withdrawDTO)
         {
-            var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var token = Request.Headers.Authorization.ToString().Split(" ")[1];
             var phone = _tokenService.GetPhone(token);
             var user = await _userRepository.GetAsync(phone);
 
@@ -55,7 +57,7 @@ namespace Wallet.Controllers
         [HttpPost("deposit")]
         public async Task<object> Deposit([FromBody] DepositDTO depositDTO)
         {
-            var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var token = Request.Headers.Authorization.ToString().Split(" ")[1];
             var phone = _tokenService.GetPhone(token);
             var user = await _userRepository.GetAsync(phone);
 
@@ -63,13 +65,14 @@ namespace Wallet.Controllers
             return Task.CompletedTask;
         }
 
-        [HttpGet("transactions/{id}")]
-        public async Task Get(TransactionMode id, [FromQuery] int limit = 10)
+        [HttpPost("transactions")]
+        public async Task<GetTransactionsResponse> Get([FromBody] GetTransactionsDTO getTransactionsDTO)
         {
-            var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var token = Request.Headers.Authorization.ToString().Split(" ")[1];
             var userId = _tokenService.GetUserId(token);
 
-            _transactionService.GetTransactionsByUserAsync(userId, limit, id);
+            var transactions = await _transactionService.GetTransactionsByUserAsync(userId, getTransactionsDTO.limit, getTransactionsDTO.mode);
+            return transactions;
         }
     }
 }

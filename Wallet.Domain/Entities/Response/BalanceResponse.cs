@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Wallet.Domain.Entities.DTOs
+namespace Wallet.Domain.Entities.Response
 {
-    public class NewTokenDTO
+    public class BalanceResponse
     {
-        public string RefreshToken { get; set; }
+        public decimal Balance { get; set; }
     }
 }

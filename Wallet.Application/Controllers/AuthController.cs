@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Wallet.DataAccess.Repositories;
 using Wallet.Domain.Entities.DTOs;
+using Wallet.Domain.Entities.Response;
 using Wallet.Domain.Enums;
 using Wallet.Infrastructure;
 using Wallet.Service.Services;
@@ -30,14 +31,14 @@ namespace Wallet.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<string> Login([FromBody] LoginDTO loginDTO)
+        public async Task<LoginResponse> Login([FromBody] LoginDTO loginDTO)
         {
             var token = await _authService.Login(loginDTO.Phone, loginDTO.Password);
             return token;
         }
 
         [HttpPost("register")]
-        public async Task<string> Register([FromBody] RegisterDTO registerDTO)
+        public async Task<RegisterResponse> Register([FromBody] RegisterDTO registerDTO)
         {
             var token = await _authService.Register(registerDTO.Phone, registerDTO.Username, registerDTO.Password);
             return token;
@@ -46,34 +47,16 @@ namespace Wallet.Controllers
         [HttpPost("resetPassword")]
         public object ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
         {
-            var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var token = Request.Headers.Authorization.ToString().Split(" ")[1];
             var phone = _tokenService.GetPhone(token);
             _authService.ResetPassword(phone, resetPasswordDTO.Password);
             return Task.CompletedTask;
         }
 
-        [HttpPost("newToken")]
-        public async Task<string> NewToken([FromBody] NewTokenDTO newTokenDTO)
+        [HttpPost("refreshToken")]
+        public async Task<RefreshTokenResponse> RefreshToken([FromBody] RefreshTokenDTO refreshTokenDTO)
         {
-            var type = _tokenService.GetTokenType(newTokenDTO.RefreshToken);
-            if (type != TokenType.RefreshToken)
-            {
-                throw new Exception("Invalid token type");
-            }
-            var phone = _tokenService.GetPhone(newTokenDTO.RefreshToken);
-            var user = await _userRepository.GetAsync(phone);
-            var newToken = _tokenService.GenerateToken(user.Id.ToString(), user.Phone);
-            return newToken;
-        }
-
-        [HttpGet("refreshToken")]
-        public async Task<string> RefreshToken()
-        {
-            var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-            var phone = _tokenService.GetPhone(token);
-            var user = await _userRepository.GetAsync(phone);
-            var newToken = _tokenService.GenerateToken(user.Id.ToString(), user.Phone, 60*24*7); // 7 days
-            return newToken;
+            return await _authService.RefreshToken(refreshTokenDTO.RefreshToken);
         }
 
         [HttpPost("validateToken")]

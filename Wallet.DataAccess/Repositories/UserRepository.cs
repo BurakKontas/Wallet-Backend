@@ -14,16 +14,18 @@ public class UserRepository(WalletContext context) : IUserRepository
 {
     private readonly WalletContext _context = context;
 
-    public Task AddAsync(User user)
+    public async Task<object> AddAsync(User user)
     {
         _context.Users.Add(user);
-        return _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
-    public Task DeleteAsync(User user)
+    public async Task<object> DeleteAsync(User user)
     {
         _context.Users.Remove(user);
-        return _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
     public async Task<User> GetAsync(int id)
@@ -44,7 +46,7 @@ public class UserRepository(WalletContext context) : IUserRepository
         return user!;
     }
 
-    public async Task UpdateAsync(User user)
+    public async Task<object> UpdateAsync(User user)
     {
         var oldUser = await GetAsync(user.Id);
 
@@ -54,5 +56,6 @@ public class UserRepository(WalletContext context) : IUserRepository
         oldUser.Hashpassword = user.Hashpassword;
 
         await _context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 }

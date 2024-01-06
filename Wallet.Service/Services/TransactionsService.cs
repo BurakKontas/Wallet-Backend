@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Wallet.DataAccess.Repositories;
 using Wallet.Domain.Entities;
+using Wallet.Domain.Entities.Response;
 using Wallet.Domain.Enums;
 
 namespace Wallet.Service.Services;
@@ -72,10 +73,24 @@ public class TransactionsService(WalletRepository walletRepository, TransactionR
         return wallet;
     }
 
-    public async Task<IEnumerable<Transaction>> GetTransactionsByUserAsync(int userId, int limit = 10, TransactionMode mode = TransactionMode.All)
+    public async Task<GetTransactionsResponse> GetTransactionsByUserAsync(int userId, int limit = 10, TransactionMode mode = TransactionMode.All)
     {
         var user = await this._userRepository.GetAsync(userId) ?? throw new Exception("User not found");
         var transactions = await this._transactionRepository.GetTransactionsByUserAsync(user, limit, mode);
-        return transactions;
+        var returnData = new List<GetTransaction>();
+        foreach (var transaction in transactions)
+        {
+            returnData.Add(new GetTransaction
+            {
+                SenderPhone = transaction.Sender!.Phone,
+                ReceiverPhone = transaction.Receiver!.Phone,
+                Amount = transaction.Amount,
+                Date = transaction.Date
+            });
+        }
+        return new GetTransactionsResponse
+        {
+            Transactions = returnData
+        };
     }
 }

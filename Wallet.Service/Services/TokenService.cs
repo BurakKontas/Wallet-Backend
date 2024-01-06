@@ -36,6 +36,11 @@ public class TokenService(string secretKey, string issuer, string audience)
         return tokenHandler.WriteToken(token);
     }
 
+    public string GenerateRefreshToken(string userId, string phone, int expirationMinutes = 60*24*7)
+    {
+        return GenerateToken(userId, phone, expirationMinutes, TokenType.RefreshToken);
+    }
+
     public ClaimsPrincipal ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -59,21 +64,17 @@ public class TokenService(string secretKey, string issuer, string audience)
         }
         catch (Exception)
         {
-            return null!; // Token validation failed
+            throw new Exception("Invalid token");
         }
     }
 
     public TokenType GetTokenType(string token)
     {
         var principal = this.ValidateToken(token);
-        if (principal == null)
-        {
-            return TokenType.Error!;
-        }
         var type = principal.FindFirst("type")?.Value;
         if (type == null)
         {
-            return TokenType.Error!;
+            throw new Exception("Invalid token");
         }
         var returntype = Enum.Parse<TokenType>(type);
         return returntype;
@@ -82,12 +83,7 @@ public class TokenService(string secretKey, string issuer, string audience)
     public int GetUserId(string token)
     {
         var principal = this.ValidateToken(token);
-        if (principal == null)
-        {
-            return -1;
-        }
         var type = GetTokenType(token);
-        if (type != TokenType.AccessToken) return -1!;
         var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         int intUserId = int.Parse(userId);
         return intUserId;
@@ -96,12 +92,7 @@ public class TokenService(string secretKey, string issuer, string audience)
     public string GetPhone(string token)
     {
         var principal = this.ValidateToken(token);
-        if (principal == null)
-        {
-            return null!;
-        }
         var type = GetTokenType(token);
-        if (type != TokenType.AccessToken) return null!;
         var phone = principal.FindFirst("phone")?.Value;
         return phone!;
     }

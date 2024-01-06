@@ -12,8 +12,8 @@ namespace Wallet.DataAccess.Contracts
         Task<User> GetAsync(int id);
         Task<User> GetAsync(string phone);
         Task<User> GetByWalletId(int walletId);
-        Task AddAsync(User user);
-        Task UpdateAsync(User user);
-        Task DeleteAsync(User user);
+        Task<object> AddAsync(User user);
+        Task<object> UpdateAsync(User user);
+        Task<object> DeleteAsync(User user);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Wallet.Domain.Enums;
 
 namespace Wallet.Domain.Entities;
 
