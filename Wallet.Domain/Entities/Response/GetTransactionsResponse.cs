@@ -16,6 +16,7 @@ namespace Wallet.Domain.Entities.Response
         public decimal Amount { get; set; }
 
         public DateTime? Date { get; set; }
+        public TransactionMode Mode { get; set; }
 
     }
 

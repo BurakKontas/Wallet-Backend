@@ -16,18 +16,17 @@ namespace Wallet.Controllers
 
         private readonly TokenService _tokenService;
         private readonly AuthService _authService;
-        private readonly UserRepository _userRepository;
 
         public AuthController(ILogger<AuthController> logger, WalletContext context, IConfiguration configuration)
         {
             _logger = logger;
 
             var walletRepository = new WalletRepository(context);
-            _userRepository = new UserRepository(context);
+            var userRepository = new UserRepository(context);
 
             _tokenService = new TokenService(configuration["JWT:SecretKey"]!, configuration["JWT:Issuer"]!, configuration["JWT:Audience"]!);
             var passwordHashService = new PasswordHashService(configuration["Hasher:SecretKey"]!);
-            _authService = new AuthService(_tokenService, passwordHashService, _userRepository, walletRepository);
+            _authService = new AuthService(_tokenService, passwordHashService, userRepository, walletRepository);
         }
 
         [HttpPost("login")]
@@ -45,11 +44,11 @@ namespace Wallet.Controllers
         }
 
         [HttpPost("resetPassword")]
-        public object ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
+        public async Task<object> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
         {
             var token = Request.Headers.Authorization.ToString().Split(" ")[1];
             var phone = _tokenService.GetPhone(token);
-            _authService.ResetPassword(phone, resetPasswordDTO.Password);
+            await _authService.ResetPassword(phone, resetPasswordDTO.Password, resetPasswordDTO.CurrentPassword);
             return Task.CompletedTask;
         }
 

@@ -68,11 +68,17 @@ namespace Wallet.Service.Services
             };
         }
 
-        public async void ResetPassword(string phone, string password)
+        public async Task<object> ResetPassword(string phone, string password, string currentPassword)
         {
             var user = await this._usersRepository.GetAsync(phone) ?? throw new Exception("User not found");
+            var ifPassword = this._passwordHashService.VerifyPassword(currentPassword, user.Hashpassword);
+            if (!ifPassword)
+            {
+                throw new Exception("Invalid password");
+            }
             user.Hashpassword = this._passwordHashService.HashPassword(password);
             await this._usersRepository.UpdateAsync(user);
+            return Task.CompletedTask;
         }
 
         public async Task<RefreshTokenResponse> RefreshToken(string refreshToken)

@@ -58,4 +58,10 @@ public class UserRepository(WalletContext context) : IUserRepository
         await _context.SaveChangesAsync();
         return Task.CompletedTask;
     }
+
+    public async Task<List<string>> CheckUsers(List<string> phones)
+    {
+        var users = await _context.Users.Where(x => phones.Contains(x.Phone)).ToListAsync();
+        return users.Select(x => x.Phone).ToList();
+    }
 }

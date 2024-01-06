@@ -78,14 +78,38 @@ public class TransactionsService(WalletRepository walletRepository, TransactionR
         var user = await this._userRepository.GetAsync(userId) ?? throw new Exception("User not found");
         var transactions = await this._transactionRepository.GetTransactionsByUserAsync(user, limit, mode);
         var returnData = new List<GetTransaction>();
+
         foreach (var transaction in transactions)
         {
+            TransactionMode transactionMode;
+
+            if(transaction.Senderid == transaction.Receiverid)
+            {
+                if(transaction.Amount < 0)
+                {
+                    transactionMode = TransactionMode.Withdraw;
+                }
+                else
+                {
+                    transactionMode = TransactionMode.Deposit;
+                }
+            } 
+            else if(transaction.Senderid == user.Id)
+            {
+                transactionMode = TransactionMode.Send;
+            } 
+            else
+            {
+                transactionMode = TransactionMode.Receive;
+            }
+
             returnData.Add(new GetTransaction
             {
                 SenderPhone = transaction.Sender!.Phone,
                 ReceiverPhone = transaction.Receiver!.Phone,
                 Amount = transaction.Amount,
-                Date = transaction.Date
+                Date = transaction.Date,
+                Mode = transactionMode,
             });
         }
         return new GetTransactionsResponse

@@ -19,6 +19,6 @@ public class WalletService(WalletRepository walletRepository)
         {
             Balance = wallet.Balance
         };
-    }
+}
 
 }

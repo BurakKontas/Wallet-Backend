@@ -15,5 +15,6 @@ namespace Wallet.DataAccess.Contracts
         Task<object> AddAsync(User user);
         Task<object> UpdateAsync(User user);
         Task<object> DeleteAsync(User user);
+        Task<List<string>> CheckUsers(List<string> phones);
     }
 }
