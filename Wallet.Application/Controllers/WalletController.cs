@@ -29,7 +29,7 @@ namespace Wallet.Controllers
             var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
             var userId = _tokenService.GetUserId(token);
 
-            var wallet = _walletRepository.GetAsync(userId);
+            var wallet = await _walletRepository.GetAsync(userId);
             return await _walletService.GetBalance(wallet.Id);
         }
     }

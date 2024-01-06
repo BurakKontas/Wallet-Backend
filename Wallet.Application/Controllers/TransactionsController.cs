@@ -48,7 +48,7 @@ namespace Wallet.Controllers
             var phone = _tokenService.GetPhone(token);
             var user = await _userRepository.GetAsync(phone);
 
-            _transactionService.Withdraw(user.Walletid, withdrawDTO.Amount);
+            await _transactionService.Withdraw(user.Walletid, withdrawDTO.Amount);
             return Task.CompletedTask;
         }
 
@@ -59,7 +59,7 @@ namespace Wallet.Controllers
             var phone = _tokenService.GetPhone(token);
             var user = await _userRepository.GetAsync(phone);
 
-            _transactionService.Deposit(user.Walletid, depositDTO.Amount);
+            await _transactionService.Deposit(user.Walletid, depositDTO.Amount);
             return Task.CompletedTask;
         }
 
