@@ -32,7 +32,7 @@ namespace Wallet.Controllers
         [HttpPost("login")]
         public async Task<LoginResponse> Login([FromBody] LoginDTO loginDTO)
         {
-            var token = await _authService.Login(loginDTO.Phone, loginDTO.Password);
+            var token = await _authService.Login(loginDTO.Username, loginDTO.Password);
             return token;
         }
 

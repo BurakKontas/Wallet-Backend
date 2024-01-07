@@ -34,6 +34,12 @@ public class UserRepository(WalletContext context) : IUserRepository
         return user!;
     }
 
+    public async Task<User> GetByUsername(string username)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+        return user!;
+    }
+
     public async Task<User> GetAsync(string phone)
     {
         var user = await _context.Users.FirstOrDefaultAsync(x => x.Phone == phone);

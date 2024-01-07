@@ -8,6 +8,6 @@ namespace Wallet.Domain.Entities.DTOs
 {
     public class RegisterDTO: LoginDTO
     {
-        public string Username { get; set; }
+        public string Phone { get; set; }
     }
 }

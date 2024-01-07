@@ -19,9 +19,9 @@ namespace Wallet.Service.Services
         private readonly UserRepository _usersRepository = userRepository;
         private readonly WalletRepository _walletRepository = walletRepository;
 
-        public async Task<LoginResponse> Login(string phone, string password)
+        public async Task<LoginResponse> Login(string username, string password)
         {
-            var user = await this._usersRepository.GetAsync(phone);
+            var user = await this._usersRepository.GetByUsername(username);
             if (user == null)
             {
                 throw new Exception("User not found");
@@ -37,7 +37,7 @@ namespace Wallet.Service.Services
             {
                 Token = token,
                 RefreshToken = refreshToken,
-                Phone = phone,
+                Phone = user.Phone,
                 Username = user.Username!
             };
         }

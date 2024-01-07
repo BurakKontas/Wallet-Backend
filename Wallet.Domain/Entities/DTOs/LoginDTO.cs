@@ -8,7 +8,7 @@ namespace Wallet.Domain.Entities.DTOs
 {
     public class LoginDTO
     {
-        public string Phone { get; set; }
+        public string Username { get; set; }
         public string Password { get; set; }
     }
 }

@@ -38,7 +38,7 @@ namespace Wallet.Controllers
         }
 
         [HttpPost("getusername")]
-        public async Task<GetUsernameResponse> GetUsernameByPhone([FromBody] GetUsernameDTO getUsernameDTO)
+        public async Task<GetUsernameResponse?> GetUsernameByPhone([FromBody] GetUsernameDTO getUsernameDTO)
         {
             var token = Request.Headers.Authorization.ToString().Split(" ")[1];
             _tokenService.ValidateToken(token);

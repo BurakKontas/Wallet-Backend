@@ -21,9 +21,10 @@ public class UsersService(UserRepository userRepository)
         };
     }
 
-    public async Task<GetUsernameResponse> GetUsernameByPhone(string phone)
+    public async Task<GetUsernameResponse?> GetUsernameByPhone(string phone)
     {
         var user = await this._userRepository.GetAsync(phone);
+        if (user == null) return null;
         return new GetUsernameResponse
         {
             Username = user.Username
