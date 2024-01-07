@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Wallet.DataAccess.Contracts;
@@ -35,48 +36,26 @@ public class TransactionRepository(WalletContext context): ITransactionRepositor
 
     public async Task<IEnumerable<Transaction>> GetTransactionsByUserAsync(User user, int limit = 10, TransactionMode mode = TransactionMode.All)
     {
-        List<Transaction> transactions;
-        switch(mode)
+        Expression<Func<Transaction, bool>>? filter = mode switch
         {
-            case TransactionMode.Receive:
-                transactions = await _context.Transactions
-                    .Where(x => x.Receiverid == user.Id && x.Senderid != user.Id)
-                    .Include(x => x.Sender)
-                    .Include(x => x.Receiver)
-                    .ToListAsync();
+            TransactionMode.Receive => (x => x.Receiverid == user.Id && x.Senderid != user.Id),
+            TransactionMode.Send => (x => x.Senderid == user.Id && x.Receiverid != user.Id),
+            TransactionMode.Deposit => (x => x.Senderid == user.Id && x.Receiverid == user.Id && x.Amount > 0),
+            TransactionMode.Withdraw => (x => x.Senderid == user.Id && x.Receiverid == user.Id && x.Amount < 0),
+            TransactionMode.All => (x => x.Senderid == user.Id || x.Receiverid == user.Id),
+            _ => null
+        };
 
-                break;
-            case TransactionMode.Send:
-                transactions = await _context.Transactions
-                    .Where(x => x.Senderid == user.Id && x.Receiverid != user.Id)
-                    .Include(x => x.Sender)
-                    .Include(x => x.Receiver)
-                    .ToListAsync();
-                break;
-            case TransactionMode.Deposit:
-                transactions = await _context.Transactions
-                    .Where(x => (x.Senderid == user.Id) && (x.Receiverid == user.Id) && (x.Amount > 0))
-                    .Include(x => x.Sender)
-                    .Include(x => x.Receiver)
-                    .ToListAsync();
-                break;
-            case TransactionMode.Withdraw:
-                transactions = await _context.Transactions
-                    .Where(x => (x.Senderid == user.Id) && (x.Receiverid == user.Id) && (x.Amount < 0))
-                    .Include(x => x.Sender)
-                    .Include(x => x.Receiver)
-                    .ToListAsync();
-                break;
-            case TransactionMode.All:
-                transactions = await _context.Transactions
-                    .Where(x => (x.Senderid == user.Id) || (x.Receiverid == user.Id))
-                    .Include(x => x.Sender)
-                    .Include(x => x.Receiver)
-                    .ToListAsync();
-                break;
-            default:
-                return null!;
-        }
+        if (filter == null) return null!;
+        
+        var transactions = await _context.Transactions
+            .Where(filter)
+            .Include(x => x.Sender)
+            .Include(x => x.Receiver)
+            .OrderByDescending(x => x.Id)
+            .Take(limit)
+            .ToListAsync();
+
         return transactions;
     }
 
