@@ -36,5 +36,13 @@ namespace Wallet.Controllers
             return availableContacts;
 
         }
+
+        [HttpPost("getusername")]
+        public async Task<GetUsernameResponse> GetUsernameByPhone([FromBody] GetUsernameDTO getUsernameDTO)
+        {
+            var token = Request.Headers.Authorization.ToString().Split(" ")[1];
+            _tokenService.ValidateToken(token);
+            return await _usersService.GetUsernameByPhone(getUsernameDTO.Phone);
+        }
     }
 }
