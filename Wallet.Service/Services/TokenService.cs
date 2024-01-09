@@ -51,6 +51,7 @@ public class TokenService(string secretKey, string issuer, string audience)
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ValidIssuer = _issuer,
             ValidAudience = _audience,
@@ -83,7 +84,6 @@ public class TokenService(string secretKey, string issuer, string audience)
     public int GetUserId(string token)
     {
         var principal = this.ValidateToken(token);
-        var type = GetTokenType(token);
         var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         int intUserId = int.Parse(userId);
         return intUserId;
