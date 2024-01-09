@@ -16,18 +16,16 @@ namespace Wallet.Controllers
 
         private readonly ILogger<TransactionsController> _logger;
         private readonly TransactionsService _transactionService;
-        private readonly WalletRepository _walletRepository;
-        private readonly UserRepository _userRepository;
         private readonly TokenService _tokenService;
 
         public TransactionsController(ILogger<TransactionsController> logger, WalletContext context, IConfiguration configuration)
         {
             _logger = logger;
-            _userRepository = new UserRepository(context);
-            _walletRepository = new WalletRepository(context);
+            var userRepository = new UserRepository(context);
+            var walletRepository = new WalletRepository(context);
             var transactionRepository = new TransactionRepository(context);
 
-            _transactionService = new TransactionsService(_walletRepository, transactionRepository, _userRepository);
+            _transactionService = new TransactionsService(walletRepository, transactionRepository, userRepository);
             _tokenService = new TokenService(configuration["JWT:SecretKey"]!, configuration["JWT:Issuer"]!, configuration["JWT:Audience"]!);
         }
 
@@ -37,9 +35,8 @@ namespace Wallet.Controllers
             var token = Request.Headers.Authorization.ToString().Split(" ")[1];
 
             var senderId = _tokenService.GetUserId(token);
-            var recipient = await _userRepository.GetAsync(sendMoneyDTO.RecipientPhone);
 
-            await _transactionService.SendMoney(senderId, recipient.Id, sendMoneyDTO.Amount);
+            await _transactionService.SendMoney(senderId, sendMoneyDTO.RecipientPhone, sendMoneyDTO.Amount);
             return Task.CompletedTask;
         }
 
@@ -48,9 +45,8 @@ namespace Wallet.Controllers
         {
             var token = Request.Headers.Authorization.ToString().Split(" ")[1];
             var phone = _tokenService.GetPhone(token);
-            var user = await _userRepository.GetAsync(phone);
 
-            await _transactionService.Withdraw(user.Walletid, withdrawDTO.Amount);
+            await _transactionService.Withdraw(phone, withdrawDTO.Amount);
             return Task.CompletedTask;
         }
 
@@ -59,9 +55,8 @@ namespace Wallet.Controllers
         {
             var token = Request.Headers.Authorization.ToString().Split(" ")[1];
             var phone = _tokenService.GetPhone(token);
-            var user = await _userRepository.GetAsync(phone);
 
-            await _transactionService.Deposit(user.Walletid, depositDTO.Amount);
+            await _transactionService.Deposit(phone, depositDTO.Amount);
             return Task.CompletedTask;
         }
 

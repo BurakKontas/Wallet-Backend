@@ -16,20 +16,21 @@ public class TransactionsService(WalletRepository walletRepository, TransactionR
     private readonly TransactionRepository _transactionRepository = transactionRepository;
     private readonly UserRepository _userRepository = userRepository;
 
-    public async Task<Wallets> SendMoney(int senderId, int receiverId, decimal amount)
+    public async Task<Wallets> SendMoney(int senderId, string receiverPhone, decimal amount)
     {
         var sender = await this._walletRepository.GetAsync(senderId) ?? throw new Exception("Sender not found");
-        var receiver = await this._walletRepository.GetAsync(receiverId) ?? throw new Exception("Receiver not found");
+        var receiver = await this._userRepository.GetAsync(receiverPhone) ?? throw new Exception("Receiver not found");
+        var receiverWallet = await this._walletRepository.GetAsync(receiver.Id) ?? throw new Exception("Receiver not found");
         if (sender.Balance < amount)
         {
             throw new Exception("Insufficient funds");
         }
         var wallet = await this._walletRepository.UpdateBalance(senderId, sender.Balance - amount);
-        await this._walletRepository.UpdateBalance(receiverId, receiver.Balance + amount);
+        await this._walletRepository.UpdateBalance(receiver.Id, receiverWallet.Balance + amount);
         var transaction = new Transaction
         {
             Senderid = senderId,
-            Receiverid = receiverId,
+            Receiverid = receiver.Id,
             Amount = amount,
             Date = DateTime.Now
         };
@@ -37,11 +38,11 @@ public class TransactionsService(WalletRepository walletRepository, TransactionR
         return wallet;
     }
 
-    public async Task<Wallets> Deposit(int walletId, decimal amount)
+    public async Task<Wallets> Deposit(string phone, decimal amount)
     {
-        var wallet = await this._walletRepository.GetAsync(walletId) ?? throw new Exception("Wallet not found");
-        var user = await this._userRepository.GetByWalletId(wallet.Id) ?? throw new Exception("User not found");
-        wallet = await this._walletRepository.UpdateBalance(walletId, wallet.Balance + amount);
+        var user = await this._userRepository.GetAsync(phone) ?? throw new Exception("User not found");
+        var wallet = await this._walletRepository.GetAsync(user.Walletid) ?? throw new Exception("Wallet not found");
+        wallet = await this._walletRepository.UpdateBalance(user.Walletid, wallet.Balance + amount);
         var transaction = new Transaction
         {
             Senderid = user.Id,
@@ -53,15 +54,15 @@ public class TransactionsService(WalletRepository walletRepository, TransactionR
         return wallet;
     }
 
-    public async Task<Wallets> Withdraw(int walletId, decimal amount)
+    public async Task<Wallets> Withdraw(string phone, decimal amount)
     {
-        var wallet = await this._walletRepository.GetAsync(walletId) ?? throw new Exception("Wallet not found");
-        var user = await this._userRepository.GetByWalletId(wallet.Id) ?? throw new Exception("User not found");
+        var user = await this._userRepository.GetAsync(phone) ?? throw new Exception("User not found");
+        var wallet = await this._walletRepository.GetAsync(user.Walletid) ?? throw new Exception("Wallet not found");
         if (wallet.Balance < amount)
         {
             throw new Exception("Insufficient funds");
         }
-        wallet = await this._walletRepository.UpdateBalance(walletId, wallet.Balance - amount);
+        wallet = await this._walletRepository.UpdateBalance(user.Walletid, wallet.Balance - amount);
         var transaction = new Transaction
         {
             Senderid = user.Id,
