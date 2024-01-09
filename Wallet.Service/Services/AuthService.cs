@@ -42,7 +42,7 @@ namespace Wallet.Service.Services
             };
         }
 
-        public async Task<RegisterResponse> Register(string phone,string username, string password)
+        public async Task<RegisterResponse> Register(string phone, string username, string password)
         {
             var user = await this._usersRepository.GetAsync(phone);
             if (user != null)
@@ -64,7 +64,8 @@ namespace Wallet.Service.Services
             {
                 Token = token,
                 RefreshToken = refreshToken,
-                Phone = phone
+                Phone = phone,
+                Username = username
             };
         }
 

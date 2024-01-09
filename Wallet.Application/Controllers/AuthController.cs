@@ -32,15 +32,15 @@ namespace Wallet.Controllers
         [HttpPost("login")]
         public async Task<LoginResponse> Login([FromBody] LoginDTO loginDTO)
         {
-            var token = await _authService.Login(loginDTO.Username, loginDTO.Password);
-            return token;
+            var result = await _authService.Login(loginDTO.Username, loginDTO.Password);
+            return result;
         }
 
         [HttpPost("register")]
         public async Task<RegisterResponse> Register([FromBody] RegisterDTO registerDTO)
         {
-            var token = await _authService.Register(registerDTO.Phone, registerDTO.Username, registerDTO.Password);
-            return token;
+            var result = await _authService.Register(registerDTO.Phone, registerDTO.Username, registerDTO.Password);
+            return result;
         }
 
         [HttpPost("resetPassword")]
